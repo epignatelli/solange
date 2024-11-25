@@ -12,7 +12,7 @@ append_to_path() {
     local target_file="${2:-$HOME/.bashrc}" # Shell config file (default: ~/.bashrc)
 
     if ! grep -q "export PATH=.*$new_dir" "$target_file"; then
-        echo "export PATH=\"\$PATH:$new_dir\"" >> "$target_file"
+        echo "export PATH=\"\$PATH:$new_dir\"" >>"$target_file"
         echo "Added $new_dir to PATH permanently in $target_file"
     else
         echo "$new_dir is already in PATH in $target_file"
