@@ -3,17 +3,20 @@
 # the validator for the specs of each machine 
 
 # set versions
-SOL_VERSION="2.0.16"
-TOOLS_VERSION="1.43"
+SOL_VERSION=$(cat SOL_VERSION.txt)
 
-# tidy
+# do everything as sol user
+su - sol
+
+# do everything in HOME
+cd $HOME
 mkdir -p solana
 cd solana
 
 # install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# add cargo to path
+# add cargo to path permanently
 export PATH="$HOME/.cargo/bin:$PATH"
 
 # install base prerequisites
