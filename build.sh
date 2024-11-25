@@ -113,6 +113,50 @@ EOF"
     echo "System tuning complete."
 }
 
+setup_service() {
+    local service_file="/etc/systemd/system/sol.service"
+
+    sudo bach -c "cat > $service_file <<EOF
+[Unit]
+Description=Solana Validator
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=sol
+LimitNOFILE=1000000
+LogRateLimitIntervalSec=0
+Environment="PATH=/bin:/usr/bin:/home/sol/.local/share/solana/install/active_release/bin"
+ExecStart=/home/sol/bin/run.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+    sudo systemctl enable --now sol
+    echo "Solana service setup complete."
+}
+
+setup_log() {
+    # Setup log rotation
+
+    cat >logrotate.sol <<EOF
+/home/sol/agave-validator.log {
+  rotate 7
+  daily
+  missingok
+  postrotate
+    systemctl kill -s USR1 sol.service
+  endscript
+}
+EOF
+    sudo cp logrotate.sol /etc/logrotate.d/sol
+    systemctl restart logrotate.service
+
+}
+
 # Main script execution
 main() {
     # Ensure script is run as the "sol" user
@@ -137,10 +181,13 @@ main() {
     install_solana "$HOME/solana"
 
     # Mount drives (customize drives as needed)
-    mount_drives "/dev/nvme0n1" "/dev/nvme1n1"
+    mount_drives $1 $2
 
     # Tune the system
     tune_system
+
+    # Setup Solana service
+    setup_service
 
     echo "Setup complete. Reboot the system for all changes to take effect."
 }
