@@ -130,7 +130,7 @@ User=sol
 LimitNOFILE=1000000
 LogRateLimitIntervalSec=0
 Environment="PATH=/bin:/usr/bin:/home/sol/.local/share/solana/install/active_release/bin"
-ExecStart=/home/sol/bin/run.sh
+ExecStart=/home/sol/bin/validator.sh
 
 [Install]
 WantedBy=multi-user.target
