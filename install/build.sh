@@ -35,6 +35,7 @@ create_sol_user() {
     # Re-run the script as the sol user if not already running as sol
     if [[ "$(whoami)" != "sol" ]]; then
         echo "Switching to user 'sol'..."
+        sudo chown -R sol:sol "$0"
         sudo -u sol bash "$0" "$@"
         exit
     fi
