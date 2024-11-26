@@ -23,21 +23,21 @@ append_to_path() {
 }
 
 create_sol_user() {
-    echo "Creating a new user for Solana..."
     # Create a new user sol sudo if it doesn't exist
     if ! id sol &>/dev/null; then
+        echo "Creating a new user for Solana..."
         sudo adduser sol
         sudo usermod -aG sudo sol
         sudo passwd sol
+        echo "User 'sol' created successfully."
     fi
-    echo "User 'sol' created successfully."
 
-    # Switch to the new user
-    sudo -i -u sol bash <<EOF
-    set -e
-    cd ~
-    echo "Switched to user: \$(whoami)"
-EOF
+    # Re-run the script as the sol user if not already running as sol
+    if [[ "$(whoami)" != "sol" ]]; then
+        echo "Switching to user 'sol'..."
+        sudo -u sol bash "$0" "$@"
+        exit
+    fi
 }
 
 install_prerequisites() {
@@ -135,31 +135,6 @@ EOF"
     echo "System tuning complete."
 }
 
-setup_service() {
-    local service_file="/etc/systemd/system/sol.service"
-    sudo bash -c "cat > $service_file <<EOF
-[Unit]
-Description=Solana Validator
-After=network.target
-StartLimitIntervalSec=0
-
-[Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=sol
-LimitNOFILE=1000000
-ExecStartPre=/home/sol/solange/bin/catchup.sh
-ExecStart=/home/solange/bin/execute.sh
-TimeoutStartSec=600
-
-[Install]
-WantedBy=multi-user.target
-EOF"
-    sudo systemctl enable --now sol
-    echo "Solana service setup complete."
-}
-
 setup_log() {
     # Ensure the log directory exists with correct permissions
     local log_dir="/home/sol/solange/logs"
@@ -196,6 +171,31 @@ EOF"
     sudo systemctl restart logrotate.service
 
     echo "Log rotation setup complete for $log_file."
+}
+
+setup_service() {
+    local service_file="/etc/systemd/system/sol.service"
+    sudo bash -c "cat > $service_file <<EOF
+[Unit]
+Description=Solana Validator
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=sol
+LimitNOFILE=1000000
+ExecStartPre=/home/sol/solange/bin/catchup.sh
+ExecStart=/home/solange/bin/execute.sh
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+    sudo systemctl enable --now sol
+    echo "Solana service setup complete."
 }
 
 # Parse named parameters
