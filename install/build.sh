@@ -6,6 +6,8 @@
 # Exit on error
 set -eo pipefail
 
+echo "First argument is" "$0"
+
 # Function to append a directory to PATH
 append_to_path() {
     local new_dir="$1"                      # Directory to add to PATH
