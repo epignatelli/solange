@@ -89,6 +89,7 @@ mount_drives() {
     echo "Formatting and mounting drives..."
     sudo mkfs -t ext4 "$ledger_drive"
     sudo mkdir -p $ledger_dir
+
     sudo mount "$ledger_drive" $ledger_dir
     sudo chown -R sol:sol $ledger_dir
 
@@ -160,23 +161,41 @@ EOF"
 }
 
 setup_log() {
-    # Create log directory
-    sudo mkdir -p /home/sol/solange/logs
+    # Ensure the log directory exists with correct permissions
+    local log_dir="/home/sol/solange/logs"
+    local log_file="$log_dir/agave-validator.log"
 
-    # Setup log rotation
-    cat >logrotate.sol <<EOF
-/home/sol/solange/logs/agave-validator.log {
+    sudo mkdir -p "$log_dir"
+    sudo chown -R sol:sol "$log_dir"
+    sudo chmod 755 "$log_dir"
+
+    # Ensure the log file exists and is writable
+    sudo touch "$log_file"
+    sudo chown sol:sol "$log_file"
+    sudo chmod 644 "$log_file"
+
+    # Setup log rotation for the log file
+    local logrotate_config="/etc/logrotate.d/sol"
+
+    sudo bash -c "cat >$logrotate_config <<EOF
+$log_file {
   rotate 7
   daily
   missingok
+  notifempty
+  compress
+  delaycompress
+  copytruncate
   postrotate
-    systemctl kill -s USR1 sol.service
+    systemctl kill -s USR1 sol.service > /dev/null 2>/dev/null || true
   endscript
 }
-EOF
-    sudo cp logrotate.sol /etc/logrotate.d/sol
-    systemctl restart logrotate.service
+EOF"
 
+    # Restart the logrotate service to apply changes
+    sudo systemctl restart logrotate.service
+
+    echo "Log rotation setup complete for $log_file."
 }
 
 # Parse named parameters
