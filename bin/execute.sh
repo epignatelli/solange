@@ -7,7 +7,6 @@ timedatetctl | grep "synchronized: yes" || {
     sudo systemctl start systemd-timesyncd
 }
 
-# TODO: make ledged and accounts directories a variable
 # TODO: generalise to any network (mainnet, testnet, devnet)
 
 # start the validator
@@ -21,8 +20,8 @@ exec agave-validator \
     --only-known-rpc \
     --no-snapshot-fetch \
     --log /home/sol/solange/logs/agave-validator.log \
-    --ledger /mnt/ledger \
-    --accounts /mnt/accounts \
+    --ledger $1 \
+    --accounts $2 \
     --rpc-port 8899 \
     --dynamic-port-range 8000-8020 \
     --entrypoint entrypoint.testnet.solana.com:8001 \

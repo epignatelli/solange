@@ -181,11 +181,11 @@ parse_args() {
             INSTALL_DIR="$2"
             shift 2
             ;;
-        --mount-ledger)
+        --ledger-drive)
             LEDGER_DRIVE="$2"
             shift 2
             ;;
-        --mount-accounts)
+        --accounts-drive)
             ACCOUNTS_DRIVE="$2"
             shift 2
             ;;
