@@ -72,17 +72,25 @@ install_solana() {
 mount_drives() {
     local ledger_drive="$1"
     local accounts_drive="$2"
+    local ledger_dir="${3:-/mnt/ledger}"
+    local accounts_dir="${4:-/mnt/accounts}"
 
     echo "Formatting and mounting drives..."
     sudo mkfs -t ext4 "$ledger_drive"
-    sudo mkfs -t ext4 "$accounts_drive"
+    mkdir -p $ledger_dir
+    sudo mount "$ledger_drive" $ledger_dir
+    sudo chown -R sol:sol $ledger_dir
 
-    mkdir -p /mnt/ledger /mnt/accounts
-    sudo chown -R sol:sol /mnt/ledger /mnt/accounts
-
-    sudo mount "$ledger_drive" /mnt/ledger
-    sudo mount "$accounts_drive" /mnt/accounts
-
+    if [[ "$ledger_drive" != "$accounts_drive" ]]; then
+        sudo mkfs -t ext4 "$accounts_drive"
+        mkdir -p $accounts_dir
+        sudo mount "$accounts_drive" $accounts_dir
+        sudo chown -R sol:sol $accounts_dir
+    else
+        mkdir -p $ledger_dir/ledger
+        mkdir -p $ledger_dir/accounts
+        sudo chown -R sol:sol $ledger_dir
+    fi
     echo "Drives mounted successfully."
 }
 
@@ -181,6 +189,14 @@ parse_args() {
             ACCOUNTS_DRIVE="$2"
             shift 2
             ;;
+        --ledger-dir)
+            LEDGER_DIR="$2"
+            shift 2
+            ;;
+        --accounts-dir)
+            ACCOUNTS_DIR="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -195,6 +211,8 @@ main() {
     INSTALL_DIR="$HOME/solange"
     LEDGER_DRIVE=""
     ACCOUNTS_DRIVE=""
+    LEDGER_DIR="/mnt/ledger"
+    ACCOUNTS_DIR="/mnt/accounts"
 
     # Parse named parameters
     parse_args "$@"
@@ -215,7 +233,7 @@ main() {
     install_solana "$INSTALL_DIR" "$SOL_VERSION"
 
     # Mount drives
-    mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE"
+    mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE" "$LEDGER_DIR" "$ACCOUNTS_DIR"
 
     # Tune system
     tune_system
