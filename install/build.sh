@@ -127,7 +127,7 @@ Restart=always
 RestartSec=1
 User=sol
 LimitNOFILE=1000000
-ExecStart=/home/solange/bin/validator.sh
+ExecStart=/home/solange/bin/execute.sh
 
 [Install]
 WantedBy=multi-user.target
