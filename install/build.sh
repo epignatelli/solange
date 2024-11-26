@@ -28,6 +28,7 @@ create_sol_user() {
     if ! id sol &>/dev/null; then
         sudo adduser sol
         sudo usermod -aG sudo sol
+        sudo passwd sol
     fi
     echo "User 'sol' created successfully."
 
