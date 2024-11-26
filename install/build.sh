@@ -167,7 +167,7 @@ parse_args() {
 
 main() {
     # Default values
-    SOL_VERSION="stable"
+    SOL_VERSION=$(curl -s https://api.github.com/repos/anza-xyz/agave/releases/latest | jq -r '.tag_name' | sed 's/v//')
     INSTALL_DIR="$HOME/solange"
     LEDGER_DRIVE=""
     ACCOUNTS_DRIVE=""
