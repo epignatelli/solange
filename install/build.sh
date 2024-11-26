@@ -80,18 +80,18 @@ mount_drives() {
 
     echo "Formatting and mounting drives..."
     sudo mkfs -t ext4 "$ledger_drive"
-    mkdir -p $ledger_dir
+    sudo mkdir -p $ledger_dir
     sudo mount "$ledger_drive" $ledger_dir
     sudo chown -R sol:sol $ledger_dir
 
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
         sudo mkfs -t ext4 "$accounts_drive"
-        mkdir -p $accounts_dir
+        sudo mkdir -p $accounts_dir
         sudo mount "$accounts_drive" $accounts_dir
         sudo chown -R sol:sol $accounts_dir
     else
-        mkdir -p $ledger_dir/ledger
-        mkdir -p $ledger_dir/accounts
+        sudo mkdir -p $ledger_dir/ledger
+        sudo mkdir -p $ledger_dir/accounts
         sudo chown -R sol:sol $ledger_dir
     fi
     echo "Drives mounted successfully."
