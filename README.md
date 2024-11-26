@@ -1,53 +1,34 @@
-# SOLANGE: Plug-and-play solana node startup for developers
+<div align="center">
 
-**[Quickstart](#what-is-solange)** | **[Install](#installation)** | **[Execution](#execution)** | **[Monitoring](#monitoring)** | **[Examples](#examples)** |
+# SOLANGE: Building and executing solana validators
+
+**[Quickstart](#what-is-solange)** | **[Setup](#setup-the-node)** | **[Execution](#execute-the-node)** | **[Monitoring](#monitoring)** | **[Examples](#examples)**
 
 </div>
 
 ## What is SOLANGE?
-Solange is a plug-and-play solana node startup for developers.
-It is a set of scripts that allow you to start a solana node with a single command.
+Solange is a set of scripts to build and execute a solana validator node. It is designed to be a plug-and-play solution for developers who want to run a validator node on the solana network.
 
-## Installation
-1. On the validator machine, run the `build.sh` installation script
-2. On your private computer, run the `create_accounts.sh` script to create the SSH key pair that you will use to connect to your solana validator node, and your vote account
-3. Copy to the solana validator node machine:
-   1. Validator key
-   2. Vote account key
-
-### 1. Install the solana validator node (on the validator machine)
-1.1. Create a `sol` user, if you haven't already, and add it to the sudoers group
+## Setup the node
+### 1. Install solana on validator node
 ```bash
-sudo adduser sol
-sudo usermod -aG sudo sol
-su - sol # login as sol
-```
-1.2 Install the solana software package
-```bash
-cd $HOME
-bash -c $(wget https://github.com/epignatelli/solange/raw/build.sh <ledger-drive-id> <accounts-drive-id>)
+bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/build.sh?token=GHSAT0AAAAAACJTRNOPSLPSV6IAYGVK6R6UZ2GGYTQ')"
 ```
 
-### 2. Create accounts (on your local private computer)
-2.1 Run the create_accounts script to create the SSH key pair. Options are "testnet", "devnet" or "mainnet"
+### 2. Create accounts on your local private computer
 ```bash
-bash -c $((wget https://github.com/epignatelli/solange/raw/create_accounts.sh <ledger-drive-id> <accounts-drive-id>)
-chmod +x create_accounts.sh "testnet"
-./create_accounts.sh
+bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/create_accounts.sh?token=GHSAT0AAAAAACJTRNOOEO7EG56BL45GNONSZ2GGTGA' --network 'testnet')"
 ```
-### 3. Copy the SSH key to the validator machine
+### 3. Copy the pub keys from your local machine to the validator machine
 ```bash
-validator_pubkey=$(solana-keygen pubkey $HOME/solange/validator-keypair.json)
-vote_pubkey=$(solana-keygen pubkey $HOME/solange/vote-account-keypair.json)
-echo $validator_pubkey > $HOME/solange/validator.pub
-echo $vote_pubkey > $HOME/solange/vote.pub
-```
-```bash
-scp $HOME/solange/validator.pub sol@$<address-of-validator>:/home/sol/solange/validator.json
-scp $HOME/solange/vote.pub sol@$address-of-validator:/home/sol/solange/vote.json
+bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/transfer_keys.sh?token=GHSAT0AAAAAACJTRNOP3KC3AQTF55JFXGTMZ2GHM5A' --remote-host latte)"
 ```
 
-## Execution
+## Execute the node
+The installation script creates a systemd service that runs the validator. You can start the service with the following command:
+```bash
+sudo systemctl start solana-validator
+```
 
 
 ## Monitoring
