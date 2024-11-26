@@ -1,4 +1,13 @@
 #!/bin/bash
+
+# make sure the clock is in sync
+timedatetctl | grep "synchronized: yes" || {
+    sudo systemctl stop systemd-timesyncd
+    sudo ntpdate -s time.nist.gov
+    sudo systemctl start systemd-timesyncd
+}
+
+# start the validator
 exec agave-validator \
     --identity /home/sol/validator-keypair.json \
     --vote-account /home/sol/vote-account-keypair.json \

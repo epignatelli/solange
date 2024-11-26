@@ -42,7 +42,8 @@ install_prerequisites() {
         libclang-dev \
         protobuf-compiler \
         wget \
-        tar
+        tar \
+        ntpdate
 
     append_to_path "$HOME/.cargo/bin"
     echo "Prerequisites installed successfully."
@@ -127,7 +128,9 @@ Restart=always
 RestartSec=1
 User=sol
 LimitNOFILE=1000000
+ExecStartPre=/home/sol/solange/bin/catchup.sh
 ExecStart=/home/solange/bin/execute.sh
+TimeoutStartSec=600
 
 [Install]
 WantedBy=multi-user.target
