@@ -10,8 +10,8 @@ echo "First argument is" "$0"
 
 # Function to append a directory to PATH
 append_to_path() {
-    local new_dir="$1"                      # Directory to add to PATH
-    local target_file="${2:-$HOME/.bashrc}" # Shell config file (default: ~/.bashrc)
+    local new_dir="$1"                          # Directory to add to PATH
+    local target_file="${2:-/home/sol/.bashrc}" # Shell config file (default: ~/.bashrc)
 
     if ! grep -q "export PATH=.*$new_dir" "$target_file"; then
         echo "export PATH=\"\$PATH:$new_dir\"" >>"$target_file"
@@ -35,20 +35,12 @@ create_sol_user() {
     else
         echo "User 'sol' already exists."
     fi
-
-    # Re-run the script as the sol user if not already running as sol
-    if [[ "$(whoami)" != "sol" ]]; then
-        echo "Switching to user 'sol'..."
-        chmod +rx "$0"
-        sudo -u sol "$0" "$@"
-        exit
-    fi
 }
 
 install_prerequisites() {
     echo "Installing prerequisites..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source $HOME/.cargo/env
+    source /home/sol/.cargo/env
 
     sudo apt-get update && sudo apt-get install -y \
         build-essential \
@@ -61,7 +53,7 @@ install_prerequisites() {
         tar \
         ntpdate
 
-    append_to_path "$HOME/.cargo/bin"
+    append_to_path "/home/sol/.cargo/bin"
     echo "Prerequisites installed successfully."
 }
 
@@ -243,7 +235,7 @@ parse_args() {
 main() {
     # Default values
     SOL_VERSION=$(curl -s https://api.github.com/repos/anza-xyz/agave/releases/latest | jq -r '.tag_name' | sed 's/v//')
-    INSTALL_DIR="$HOME/solange"
+    INSTALL_DIR="/home/sol/solange"
     LEDGER_DRIVE=""
     ACCOUNTS_DRIVE=""
     LEDGER_DIR="/mnt/ledger"
