@@ -30,6 +30,9 @@ create_sol_user() {
         sudo usermod -aG sudo sol
     fi
     echo "User 'sol' created successfully."
+
+    # Switch to the new user
+    sudo - sol
 }
 
 install_prerequisites() {
