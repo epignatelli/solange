@@ -10,16 +10,17 @@
 Solange is a set of scripts to build and execute a solana validator node. It is designed to be a plug-and-play solution for developers who want to run a validator node on the solana network.
 
 ## Setup the node
-### 1. [On validator machine] Install solana on validator node
+#### 1. [On validator machine] Install solana on validator node
 ```bash
 bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/build.sh?token=GHSAT0AAAAAACJTRNOPSLPSV6IAYGVK6R6UZ2GGYTQ')"
 ```
 
-### 2. [On personal machine] Create accounts
+#### 2. [On personal machine] Create accounts
 ```bash
 bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/create_accounts.sh?token=GHSAT0AAAAAACJTRNOOEO7EG56BL45GNONSZ2GGTGA' --network 'testnet')"
 ```
-### 3. [On personal machine] Copy the pub keys to the validator machine
+
+#### 3. [On personal machine] Copy the pub keys to the validator machine
 ```bash
 bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/transfer_keys.sh?token=GHSAT0AAAAAACJTRNOP3KC3AQTF55JFXGTMZ2GHM5A' --remote-host latte)"
 ```
