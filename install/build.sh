@@ -4,7 +4,7 @@
 # for the specifications of each machine.
 
 # Exit on error
-set -euo pipefail
+set -eo pipefail
 
 # Function to append a directory to PATH
 append_to_path() {
@@ -22,7 +22,13 @@ append_to_path() {
     echo "Added $new_dir to PATH in the current shell session"
 }
 
-# Function to install prerequisites
+create_sol_user() {
+    echo "Creating a new user for Solana..."
+    sudo adduser sol
+    sudo usermod -aG sudo sol
+    echo "User 'sol' created successfully."
+}
+
 install_prerequisites() {
     echo "Installing prerequisites..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -42,27 +48,25 @@ install_prerequisites() {
     echo "Prerequisites installed successfully."
 }
 
-# Function to install Solana
 install_solana() {
-    local install_dir="${1:-$HOME/sol}"
-    echo "Installing Solana in $install_dir..."
+    local install_dir="$1"
+    local sol_version="$2"
 
+    echo "Installing Solana version $sol_version in $install_dir..."
     mkdir -p "$install_dir"
     cd "$install_dir"
 
-    local tarball="v${SOL_VERSION}.tar.gz"
+    local tarball="v${sol_version}.tar.gz"
     wget "https://github.com/anza-xyz/agave/archive/refs/tags/$tarball"
     tar xvf "$tarball"
-    cd "agave-$SOL_VERSION"
+    cd "agave-$sol_version"
 
     ./scripts/cargo-install-all.sh .
 
     append_to_path "$PWD/bin"
-    agave-install init "$SOL_VERSION"
     echo "Solana installed successfully."
 }
 
-# Function to mount drives
 mount_drives() {
     local ledger_drive="$1"
     local accounts_drive="$2"
@@ -80,7 +84,6 @@ mount_drives() {
     echo "Drives mounted successfully."
 }
 
-# Function to optimize system settings
 tune_system() {
     echo "Optimizing system settings..."
     local sysctl_file="/etc/sysctl.d/21-agave-validator.conf"
@@ -104,9 +107,6 @@ EOF"
     local system_conf="/etc/systemd/system.conf"
     if ! grep -q "DefaultLimitNOFILE=1000000" "$system_conf"; then
         sudo bash -c "echo 'DefaultLimitNOFILE=1000000' >> $system_conf"
-        echo "Added DefaultLimitNOFILE to $system_conf."
-    else
-        echo "DefaultLimitNOFILE is already set in $system_conf."
     fi
 
     sudo systemctl daemon-reload
@@ -115,7 +115,6 @@ EOF"
 
 setup_service() {
     local service_file="/etc/systemd/system/sol.service"
-
     sudo bash -c "cat > $service_file <<EOF
 [Unit]
 Description=Solana Validator
@@ -128,8 +127,6 @@ Restart=always
 RestartSec=1
 User=sol
 LimitNOFILE=1000000
-LogRateLimitIntervalSec=0
-Environment="PATH=/bin:/usr/bin:/home/sol/.local/share/solana/install/active_release/bin"
 ExecStart=/home/solange/bin/validator.sh
 
 [Install]
@@ -139,56 +136,70 @@ EOF"
     echo "Solana service setup complete."
 }
 
-setup_log() {
-    # Setup log rotation
-
-    cat >logrotate.sol <<EOF
-/home/solange/agave-validator.log {
-  rotate 7
-  daily
-  missingok
-  postrotate
-    systemctl kill -s USR1 sol.service
-  endscript
+# Parse named parameters
+parse_args() {
+    local args=("$@")
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        --sol-version)
+            SOL_VERSION="$2"
+            shift 2
+            ;;
+        --install-dir)
+            INSTALL_DIR="$2"
+            shift 2
+            ;;
+        --mount-ledger)
+            LEDGER_DRIVE="$2"
+            shift 2
+            ;;
+        --mount-accounts)
+            ACCOUNTS_DRIVE="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+        esac
+    done
 }
-EOF
-    sudo cp logrotate.sol /etc/logrotate.d/sol
-    systemctl restart logrotate.service
 
-}
-
-get_solana_version() {
-    echo $(wget https://github.com/epignatelli/solange/raw/SOL_VERSION.txt)
-}
-
-# Main script execution
 main() {
-    # Ensure script is run as the "sol" user
-    if [[ "$(whoami)" != "sol" ]]; then
-        echo "Please run this script as the 'sol' user or switch to the 'sol' user using 'su - sol'."
+    # Default values
+    SOL_VERSION="stable"
+    INSTALL_DIR="$HOME/solange"
+    LEDGER_DRIVE=""
+    ACCOUNTS_DRIVE=""
+
+    # Parse named parameters
+    parse_args "$@"
+
+    # Check required arguments
+    if [[ -z "$LEDGER_DRIVE" || -z "$ACCOUNTS_DRIVE" ]]; then
+        echo "Error: Both --mount-ledger and --mount-accounts are required."
         exit 1
     fi
 
-    SOL_VERSION=get_solana_version
-    echo "Using Solana version: $SOL_VERSION"
+    # Create user
+    create_sol_user
 
     # Install prerequisites
     install_prerequisites
 
     # Install Solana
-    install_solana "$HOME/solana"
+    install_solana "$INSTALL_DIR" "$SOL_VERSION"
 
-    # Mount drives (customize drives as needed)
-    mount_drives $1 $2
+    # Mount drives
+    mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE"
 
-    # Tune the system
+    # Tune system
     tune_system
 
-    # Setup Solana service
+    # Setup service
     setup_service
 
-    echo "Setup complete. Reboot the system for all changes to take effect."
+    echo "Setup complete!"
 }
 
-# Run main function
 main "$@"
