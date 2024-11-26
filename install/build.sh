@@ -32,7 +32,11 @@ create_sol_user() {
     echo "User 'sol' created successfully."
 
     # Switch to the new user
-    sudo - sol
+    sudo -i -u sol bash <<EOF
+    set -e
+    cd ~
+    echo "Switched to user: \$(whoami)"
+EOF
 }
 
 install_prerequisites() {
