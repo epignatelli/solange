@@ -160,7 +160,7 @@ EOF"
 
 setup_log() {
     # Create log directory
-    mkdir -p /home/sol/solange/logs
+    sudo mkdir -p /home/sol/solange/logs
 
     # Setup log rotation
     cat >logrotate.sol <<EOF
