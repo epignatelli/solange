@@ -40,7 +40,7 @@ create_sol_user() {
     if [[ "$(whoami)" != "sol" ]]; then
         echo "Switching to user 'sol'..."
         chmod +rx "$0"
-        sudo -u sol /bin/bash "$0" "$@"
+        sudo -u sol "$0" "$@"
         exit
     fi
 }
