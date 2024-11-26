@@ -139,6 +139,26 @@ EOF"
     echo "Solana service setup complete."
 }
 
+setup_log() {
+    # Create log directory
+    mkdir -p /home/sol/solange/logs
+
+    # Setup log rotation
+    cat >logrotate.sol <<EOF
+/home/sol/solange/logs/agave-validator.log {
+  rotate 7
+  daily
+  missingok
+  postrotate
+    systemctl kill -s USR1 sol.service
+  endscript
+}
+EOF
+    sudo cp logrotate.sol /etc/logrotate.d/sol
+    systemctl restart logrotate.service
+
+}
+
 # Parse named parameters
 parse_args() {
     local args=("$@")
@@ -198,6 +218,9 @@ main() {
 
     # Tune system
     tune_system
+
+    # Setup log rotation
+    setup_log
 
     # Setup service
     setup_service

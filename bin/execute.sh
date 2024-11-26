@@ -9,15 +9,15 @@ timedatetctl | grep "synchronized: yes" || {
 
 # start the validator
 exec agave-validator \
-    --identity /home/sol/validator-keypair.json \
-    --vote-account /home/sol/vote-account-keypair.json \
+    --identity /home/sol/solange/keys/validator-keypair.json \
+    --vote-account /home/sol/solange/keys/vote-account-keypair.json \
     --known-validator 5D1fNXzvv5NjV1ysLjirC4WY92RNsVH18vjmcszZd8on \
     --known-validator 7XSY3MrYnK8vq693Rju17bbPkCN3Z7KvvfvJx4kdrsSY \
     --known-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN \
     --known-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv \
     --only-known-rpc \
     --no-snapshot-fetch \
-    --log /home/solange/agave-validator.log \
+    --log /home/sol/solange/bin/agave-validator.log \
     --ledger /mnt/ledger \
     --accounts /mnt/accounts \
     --rpc-port 8899 \
