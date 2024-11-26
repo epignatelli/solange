@@ -68,7 +68,7 @@ install_solana() {
     ./scripts/cargo-install-all.sh .
     append_to_path "$PWD/bin"
 
-    agave-install init
+    agave-install init $sol_version
     echo "Solana installed successfully."
 }
 
