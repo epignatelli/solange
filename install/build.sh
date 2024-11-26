@@ -44,7 +44,7 @@ install_prerequisites() {
 
 # Function to install Solana
 install_solana() {
-    local install_dir="${1:-$HOME/solana}"
+    local install_dir="${1:-$HOME/sol}"
     echo "Installing Solana in $install_dir..."
 
     mkdir -p "$install_dir"
@@ -116,7 +116,7 @@ EOF"
 setup_service() {
     local service_file="/etc/systemd/system/sol.service"
 
-    sudo bach -c "cat > $service_file <<EOF
+    sudo bash -c "cat > $service_file <<EOF
 [Unit]
 Description=Solana Validator
 After=network.target
@@ -130,7 +130,7 @@ User=sol
 LimitNOFILE=1000000
 LogRateLimitIntervalSec=0
 Environment="PATH=/bin:/usr/bin:/home/sol/.local/share/solana/install/active_release/bin"
-ExecStart=/home/sol/bin/validator.sh
+ExecStart=/home/solange/bin/validator.sh
 
 [Install]
 WantedBy=multi-user.target
@@ -143,7 +143,7 @@ setup_log() {
     # Setup log rotation
 
     cat >logrotate.sol <<EOF
-/home/sol/agave-validator.log {
+/home/solange/agave-validator.log {
   rotate 7
   daily
   missingok
@@ -157,6 +157,10 @@ EOF
 
 }
 
+get_solana_version() {
+    echo $(wget https://github.com/epignatelli/solange/raw/SOL_VERSION.txt)
+}
+
 # Main script execution
 main() {
     # Ensure script is run as the "sol" user
@@ -165,13 +169,7 @@ main() {
         exit 1
     fi
 
-    # Set Solana version from file
-    if [[ ! -f SOL_VERSION.txt ]]; then
-        echo "SOL_VERSION.txt file not found. Please create it with the required Solana version."
-        exit 1
-    fi
-
-    export SOL_VERSION=$(cat SOL_VERSION.txt)
+    SOL_VERSION=get_solana_version
     echo "Using Solana version: $SOL_VERSION"
 
     # Install prerequisites

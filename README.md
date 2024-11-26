@@ -16,35 +16,22 @@ It is a set of scripts that allow you to start a solana node with a single comma
    2. Vote account key
 
 ### 1. Install the solana validator node (on the validator machine)
-1. Create a `sol` user, if you haven't already, and add it to the sudoers group
+1.1. Create a `sol` user, if you haven't already, and add it to the sudoers group
 ```bash
 sudo adduser sol
 sudo usermod -aG sudo sol
+su - sol # login as sol
 ```
-2. Log in as the `sol` user
-```bash
-su - sol
-```
-3. Clone the repository
+1.2 Install the solana software package
 ```bash
 cd $HOME
-git clone https://github.com/epignatelli/solange.git
+bash -c $(wget https://github.com/epignatelli/solange/raw/build.sh <ledger-drive-id> <accounts-drive-id>)
 ```
-4. Run the build script to install all the necessary dependencies
+
+### 2. Create accounts (on your local private computer)
+2.1 Run the create_accounts script to create the SSH key pair. Options are "testnet", "devnet" or "mainnet"
 ```bash
-cd solange
-chmod +x build.sh <ledger-drive-id> <accounts-drive-id>
-./build.sh
-```
-### 2. Create the SSH key pair (on your local private computer)
-1. Clone the repository
-```bash
-cd $HOME
-git clone https://github.com/epignatelli/solange.git
-```
-1. Run the create_accounts script to create the SSH key pair. Options are "testnet", "devnet" or "mainnet"
-```bash
-cd solange
+bash -c $((wget https://github.com/epignatelli/solange/raw/create_accounts.sh <ledger-drive-id> <accounts-drive-id>)
 chmod +x create_accounts.sh "testnet"
 ./create_accounts.sh
 ```
@@ -81,3 +68,19 @@ solana gossip | grep <validator-pubkey>
 
 ## Examples
 TODO
+
+## References
+- Operating a validator: https://docs.anza.xyz/operations
+- Install solana: https://docs.anza.xyz/cli/install
+- Jito: https://www.jito.network/docs/jitosol/introduction-to-jito/
+- Youtube workshop: https://www.youtube.com/watch?v=b0-vMyoojuo&list=PLilwLeBwGuK6jKrmn7KOkxRxS9tvbRa5p
+- Solana economic design: https://solana.com/docs/core/fees#basic-economic-design
+- Economy calculator: https://cogentcrypto.io/ValidatorProfitCalculator#AuBB9st3RqhHBkzZgBSm6SVnHZNJQSHeBWCSkik4bzdA
+- Initiatives: https://docs.anza.xyz/operations/validator-initiatives
+- Solana delegation program: https://solana.org/delegation-program
+- Solblaze: https://solblaze.com/
+- Marinade: https://marinade.finance/
+- Validator economy articles:
+  - https://laine-sa.medium.com/solana-staking-rewards-validator-economics-how-does-it-work-6718e4cccc4e
+  - https://apfikunmi.medium.com/running-a-solana-validator-a95cdfd6488a#5533
+  - https://medium.com/@aadesolaade2341/decoding-solana-unraveling-the-role-of-validators-and-fee-economics-bd3eb40a08c3

@@ -7,7 +7,8 @@ exec agave-validator \
     --known-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN \
     --known-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv \
     --only-known-rpc \
-    --log /home/sol/agave-validator.log \
+    --no-snapshot-fetch \
+    --log /home/solange/agave-validator.log \
     --ledger /mnt/ledger \
     --accounts /mnt/accounts \
     --rpc-port 8899 \
