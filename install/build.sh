@@ -24,8 +24,11 @@ append_to_path() {
 
 create_sol_user() {
     echo "Creating a new user for Solana..."
-    sudo adduser sol
-    sudo usermod -aG sudo sol
+    # Create a new user sol sudo if it doesn't exist
+    if ! id sol &>/dev/null; then
+        sudo adduser sol
+        sudo usermod -aG sudo sol
+    fi
     echo "User 'sol' created successfully."
 }
 
