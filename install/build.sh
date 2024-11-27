@@ -9,7 +9,7 @@ set -eo pipefail
 # Function to append a directory to PATH
 append_to_path() {
     local new_dir="$1"                      # Directory to add to PATH
-    local target_file="${2:-/home/sol/.bashrc}" # Shell config file (default: ~/.bashrc)
+    local target_file="${2:-$HOME/.bashrc}" # Shell config file (default: ~/.bashrc)
 
     if ! grep -q "export PATH=.*$new_dir" "$target_file"; then
         echo "export PATH=\"\$PATH:$new_dir\"" >>"$target_file"
@@ -45,10 +45,10 @@ create_sol_user() {
 
 install_prerequisites() {
     echo "Installing prerequisites..."
-    sudo -e sol curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source /home/sol/.cargo/env
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source $HOME/.cargo/env
 
-    sudo -e sol apt-get update && sudo -e sol apt-get install -y \
+    sudo apt-get update && sudo apt-get install -y \
         build-essential \
         pkg-config \
         libudev-dev \
@@ -59,7 +59,7 @@ install_prerequisites() {
         tar \
         ntpdate
 
-    append_to_path "/home/sol/.cargo/bin"
+    append_to_path "$HOME/.cargo/bin"
     echo "Prerequisites installed successfully."
 }
 
@@ -68,7 +68,7 @@ install_solana() {
     local sol_version="$2"
 
     echo "Installing Solana version $sol_version in $install_dir..."
-    sudo -e sol mkdir -p "$install_dir"
+    mkdir -p "$install_dir"
     cd "$install_dir"
 
     local tarball="v${sol_version}.tar.gz"
@@ -79,7 +79,7 @@ install_solana() {
     ./scripts/cargo-install-all.sh .
     append_to_path "$PWD/bin"
 
-    sudo -e sol agave-install init $sol_version
+    agave-install init $sol_version
     echo "Solana installed successfully."
 }
 
@@ -90,21 +90,21 @@ mount_drives() {
     local accounts_dir="${4:-/mnt/accounts}"
 
     echo "Formatting and mounting drives..."
-    sudo -e sol mkfs -t ext4 "$ledger_drive"
-    sudo -e sol mkdir -p $ledger_dir
+    sudo mkfs -t ext4 "$ledger_drive"
+    sudo mkdir -p $ledger_dir
 
-    sudo -e sol mount "$ledger_drive" $ledger_dir
-    sudo -e sol chown -R sol:sol $ledger_dir
+    sudo mount "$ledger_drive" $ledger_dir
+    sudo chown -R sol:sol $ledger_dir
 
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
-        sudo -e sol mkfs -t ext4 "$accounts_drive"
-        sudo -e sol mkdir -p $accounts_dir
-        sudo -e sol mount "$accounts_drive" $accounts_dir
-        sudo -e sol chown -R sol:sol $accounts_dir
+        sudo mkfs -t ext4 "$accounts_drive"
+        sudo mkdir -p $accounts_dir
+        sudo mount "$accounts_drive" $accounts_dir
+        sudo chown -R sol:sol $accounts_dir
     else
-        sudo -e sol mkdir -p $ledger_dir/ledger
-        sudo -e sol mkdir -p $ledger_dir/accounts
-        sudo -e sol chown -R sol:sol $ledger_dir
+        sudo mkdir -p $ledger_dir/ledger
+        sudo mkdir -p $ledger_dir/accounts
+        sudo chown -R sol:sol $ledger_dir
     fi
     echo "Drives mounted successfully."
 }
@@ -127,14 +127,14 @@ vm.max_map_count = 1000000
 fs.nr_open = 1000000
 EOF"
 
-    sudo -e sol sysctl -p "$sysctl_file"
+    sudo sysctl -p "$sysctl_file"
 
     local system_conf="/etc/systemd/system.conf"
     if ! grep -q "DefaultLimitNOFILE=1000000" "$system_conf"; then
-        sudo -e sol bash -c "echo 'DefaultLimitNOFILE=1000000' >> $system_conf"
+        sudo bash -c "echo 'DefaultLimitNOFILE=1000000' >> $system_conf"
     fi
 
-    sudo -e sol systemctl daemon-reload
+    sudo systemctl daemon-reload
     echo "System tuning complete."
 }
 
@@ -143,14 +143,14 @@ setup_log() {
     local log_dir="/home/sol/solange/logs"
     local log_file="$log_dir/agave-validator.log"
 
-    sudo -e sol mkdir -p "$log_dir"
-    sudo -e sol chown -R sol:sol "$log_dir"
-    sudo -e sol chmod 755 "$log_dir"
+    sudo mkdir -p "$log_dir"
+    sudo chown -R sol:sol "$log_dir"
+    sudo chmod 755 "$log_dir"
 
     # Ensure the log file exists and is writable
-    sudo -e sol touch "$log_file"
-    sudo -e sol chown sol:sol "$log_file"
-    sudo -e sol chmod 644 "$log_file"
+    sudo touch "$log_file"
+    sudo chown sol:sol "$log_file"
+    sudo chmod 644 "$log_file"
 
     # Setup log rotation for the log file
     local logrotate_config="/etc/logrotate.d/sol"
@@ -171,14 +171,14 @@ $log_file {
 EOF"
 
     # Restart the logrotate service to apply changes
-    sudo -e sol systemctl restart logrotate.service
+    sudo systemctl restart logrotate.service
 
     echo "Log rotation setup complete for $log_file."
 }
 
 setup_service() {
     local service_file="/etc/systemd/system/sol.service"
-    sudo -e sol bash -c "cat > $service_file <<EOF
+    sudo bash -c "cat > $service_file <<EOF
 [Unit]
 Description=Solana Validator
 After=network.target
@@ -197,7 +197,7 @@ TimeoutStartSec=600
 [Install]
 WantedBy=multi-user.target
 EOF"
-    sudo -e sol systemctl enable --now sol
+    sudo systemctl enable --now sol
     echo "Solana service setup complete."
 }
 
@@ -241,7 +241,7 @@ parse_args() {
 main() {
     # Default values
     SOL_VERSION=$(curl -s https://api.github.com/repos/anza-xyz/agave/releases/latest | jq -r '.tag_name' | sed 's/v//')
-    INSTALL_DIR="/home/sol/solange"
+    INSTALL_DIR="$HOME/solange"
     LEDGER_DRIVE=""
     ACCOUNTS_DRIVE=""
     LEDGER_DIR="/mnt/ledger"
@@ -257,25 +257,25 @@ main() {
     fi
 
     # Create user
-    create_sol_user
+    su - sol -c create_sol_user
 
     # Install prerequisites
-    install_prerequisites
+    su - sol -c install_prerequisites
 
     # Install Solana
-    install_solana "$INSTALL_DIR" "$SOL_VERSION"
+    su - sol -c install_solana "$INSTALL_DIR" "$SOL_VERSION"
 
     # Mount drives
-    mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE" "$LEDGER_DIR" "$ACCOUNTS_DIR"
+    su - sol -c mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE" "$LEDGER_DIR" "$ACCOUNTS_DIR"
 
     # Tune system
-    tune_system
+    su - sol -c tune_system
 
     # Setup log rotation
-    setup_log
+    su - sol -c setup_log
 
     # Setup service
-    setup_service
+    su - sol -c setup_service
 
     echo "Setup complete!"
 }
