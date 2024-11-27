@@ -15,12 +15,9 @@ create_sol_user() {
         SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
         SCRIPT_PATH="$SCRIPT_DIR/$(basename -- "${BASH_SOURCE[0]}")"
 
-        # Ensure the script is executable by the 'sol' user
-        sudo chmod +x "$SCRIPT_PATH"
-        sudo chown sol:sol "$SCRIPT_PATH"
-
-        # Re-run the script as 'sol'
-        exec sudo -u sol "$SCRIPT_PATH" "$@"
+        echo "Re-running the script as the 'sol' user..."
+        sudo -u sol bash "$SCRIPT_PATH"
+        exit
     fi
 }
 
