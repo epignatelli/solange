@@ -11,9 +11,9 @@ Solange is a set of scripts to build and execute a solana validator node. It is 
 
 ## Setup the node
 #### 1. [On validator machine] Setup solana on validator node
+*Make sure you run this a `sol` user!*
 ```bash
 git clone https://github.com/epignatelli/solange $HOME/solange
-sudo - sol
 chmod +x $HOME/solange/install/setup.sh
 $HOME/solange/install/setup.sh --sol-version '2.0.17' --ledger-drive /dev/nvme0n1 --ledger-dir /mnt/ledger --accounts-drive /dev/nvme1n1 --accounts-dir /mnt/accounts
 ```
