@@ -13,6 +13,7 @@ create_sol_user() {
     # Re-run the script as the sol user
     if [[ "$(whoami)" != "sol" ]]; then
         SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+        sudo chown -R sol:sol $SCRIPT_DIR
         exec sudo -u sol $SCRIPT_DIR/build.sh "$@"
     fi
 }
