@@ -1,19 +1,8 @@
 #!/bin/bash
 
-# Script URL
-SCRIPT_URL='https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/build.sh'
-
-# Ensure we are running from a file, not via bash -c
-if [[ "$0" == "bash" ]]; then
-    temp_script="/tmp/build.sh"
-    curl -s "$SCRIPT_URL" -o "$temp_script"
-    chmod +x "$temp_script"
-    exec "$temp_script" "$@"
-fi
-
 create_sol_user() {
-    echo "Creating a new user for Solana..."
     if ! id sol &>/dev/null; then
+        echo "Creating a new user for Solana..."
         sudo adduser sol
         sudo usermod -aG sudo sol
         echo "User 'sol' created successfully."
@@ -23,7 +12,8 @@ create_sol_user() {
 
     # Re-run the script as the sol user
     if [[ "$(whoami)" != "sol" ]]; then
-        exec sudo -u sol "$0" "$@"
+        SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+        exec sudo -u sol $SCRIPT_DIR/build.sh "$@"
     fi
 }
 
