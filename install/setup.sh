@@ -14,7 +14,7 @@ create_sol_user() {
     if [[ "$(whoami)" != "sol" ]]; then
         SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
         sudo chmod -a+x $SCRIPT_DIR/build.sh
-        exec sudo -u sol $SCRIPT_DIR/build.sh "$@"
+        sudo -u sol $SCRIPT_DIR/build.sh "$@"
     fi
 }
 
