@@ -16,7 +16,7 @@ create_sol_user() {
 
         echo "Re-running the script as the 'sol' user..."
         chown -R sol:sol "$SCRIPT_DIR"
-        sudo -u sol bash "$SCRIPT_DIR/build.sh"
+        sudo -u sol "$SCRIPT_DIR/build.sh"
         exit
     fi
 }
