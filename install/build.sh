@@ -6,11 +6,9 @@
 # Exit on error
 set -eo pipefail
 
-echo "First argument is" "$0"
-
 # Function to append a directory to PATH
 append_to_path() {
-    local new_dir="$1"                          # Directory to add to PATH
+    local new_dir="$1"                      # Directory to add to PATH
     local target_file="${2:-/home/sol/.bashrc}" # Shell config file (default: ~/.bashrc)
 
     if ! grep -q "export PATH=.*$new_dir" "$target_file"; then
@@ -35,14 +33,22 @@ create_sol_user() {
     else
         echo "User 'sol' already exists."
     fi
+
+    # Re-run the script as the sol user if not already running as sol
+    # if [[ "$(whoami)" != "sol" ]]; then
+    #     echo "Switching to user 'sol'..."
+    #     sudo  "$0"
+    #     sudo -u sol bash "$0" "$@"
+    #     exit
+    # fi
 }
 
 install_prerequisites() {
     echo "Installing prerequisites..."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    sudo -e sol curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source /home/sol/.cargo/env
 
-    sudo apt-get update && sudo apt-get install -y \
+    sudo -e sol apt-get update && sudo -e sol apt-get install -y \
         build-essential \
         pkg-config \
         libudev-dev \
@@ -62,7 +68,7 @@ install_solana() {
     local sol_version="$2"
 
     echo "Installing Solana version $sol_version in $install_dir..."
-    mkdir -p "$install_dir"
+    sudo -e sol mkdir -p "$install_dir"
     cd "$install_dir"
 
     local tarball="v${sol_version}.tar.gz"
@@ -73,7 +79,7 @@ install_solana() {
     ./scripts/cargo-install-all.sh .
     append_to_path "$PWD/bin"
 
-    agave-install init $sol_version
+    sudo -e sol agave-install init $sol_version
     echo "Solana installed successfully."
 }
 
@@ -84,21 +90,21 @@ mount_drives() {
     local accounts_dir="${4:-/mnt/accounts}"
 
     echo "Formatting and mounting drives..."
-    sudo mkfs -t ext4 "$ledger_drive"
-    sudo mkdir -p $ledger_dir
+    sudo -e sol mkfs -t ext4 "$ledger_drive"
+    sudo -e sol mkdir -p $ledger_dir
 
-    sudo mount "$ledger_drive" $ledger_dir
-    sudo chown -R sol:sol $ledger_dir
+    sudo -e sol mount "$ledger_drive" $ledger_dir
+    sudo -e sol chown -R sol:sol $ledger_dir
 
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
-        sudo mkfs -t ext4 "$accounts_drive"
-        sudo mkdir -p $accounts_dir
-        sudo mount "$accounts_drive" $accounts_dir
-        sudo chown -R sol:sol $accounts_dir
+        sudo -e sol mkfs -t ext4 "$accounts_drive"
+        sudo -e sol mkdir -p $accounts_dir
+        sudo -e sol mount "$accounts_drive" $accounts_dir
+        sudo -e sol chown -R sol:sol $accounts_dir
     else
-        sudo mkdir -p $ledger_dir/ledger
-        sudo mkdir -p $ledger_dir/accounts
-        sudo chown -R sol:sol $ledger_dir
+        sudo -e sol mkdir -p $ledger_dir/ledger
+        sudo -e sol mkdir -p $ledger_dir/accounts
+        sudo -e sol chown -R sol:sol $ledger_dir
     fi
     echo "Drives mounted successfully."
 }
@@ -121,14 +127,14 @@ vm.max_map_count = 1000000
 fs.nr_open = 1000000
 EOF"
 
-    sudo sysctl -p "$sysctl_file"
+    sudo -e sol sysctl -p "$sysctl_file"
 
     local system_conf="/etc/systemd/system.conf"
     if ! grep -q "DefaultLimitNOFILE=1000000" "$system_conf"; then
-        sudo bash -c "echo 'DefaultLimitNOFILE=1000000' >> $system_conf"
+        sudo -e sol bash -c "echo 'DefaultLimitNOFILE=1000000' >> $system_conf"
     fi
 
-    sudo systemctl daemon-reload
+    sudo -e sol systemctl daemon-reload
     echo "System tuning complete."
 }
 
@@ -137,14 +143,14 @@ setup_log() {
     local log_dir="/home/sol/solange/logs"
     local log_file="$log_dir/agave-validator.log"
 
-    sudo mkdir -p "$log_dir"
-    sudo chown -R sol:sol "$log_dir"
-    sudo chmod 755 "$log_dir"
+    sudo -e sol mkdir -p "$log_dir"
+    sudo -e sol chown -R sol:sol "$log_dir"
+    sudo -e sol chmod 755 "$log_dir"
 
     # Ensure the log file exists and is writable
-    sudo touch "$log_file"
-    sudo chown sol:sol "$log_file"
-    sudo chmod 644 "$log_file"
+    sudo -e sol touch "$log_file"
+    sudo -e sol chown sol:sol "$log_file"
+    sudo -e sol chmod 644 "$log_file"
 
     # Setup log rotation for the log file
     local logrotate_config="/etc/logrotate.d/sol"
@@ -165,14 +171,14 @@ $log_file {
 EOF"
 
     # Restart the logrotate service to apply changes
-    sudo systemctl restart logrotate.service
+    sudo -e sol systemctl restart logrotate.service
 
     echo "Log rotation setup complete for $log_file."
 }
 
 setup_service() {
     local service_file="/etc/systemd/system/sol.service"
-    sudo bash -c "cat > $service_file <<EOF
+    sudo -e sol bash -c "cat > $service_file <<EOF
 [Unit]
 Description=Solana Validator
 After=network.target
@@ -191,7 +197,7 @@ TimeoutStartSec=600
 [Install]
 WantedBy=multi-user.target
 EOF"
-    sudo systemctl enable --now sol
+    sudo -e sol systemctl enable --now sol
     echo "Solana service setup complete."
 }
 
