@@ -30,7 +30,7 @@ $HOME/solange/install/transfer_keys.sh --remote-host latte
 ## Execute the node
 The installation script creates a systemd service that runs the validator. You can start the service with the following command:
 ```bash
-sudo systemctl start solana-validator
+sudo systemctl enable --now sol
 ```
 
 

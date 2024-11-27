@@ -1,50 +1,50 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # Function to display usage
 usage() {
     echo "Usage: $0 --remote-host <hostname> [--validator-keypair <path>] [--vote-keypair <path>] [--output-dir <path>]"
     echo
     echo "Arguments:"
+    echo "  --port               Port number to use for SSH connection (default: 22)."
     echo "  --remote-host        Remote hostname or IP address (required)."
-    echo "  --validator-keypair  Path to the validator keypair file (default: \$HOME/solange/validator-keypair.json)."
-    echo "  --vote-keypair       Path to the vote account keypair file (default: \$HOME/solange/vote-account-keypair.json)."
-    echo "  --output-dir         Output directory for public key files (default: \$HOME/solange)."
+    echo "  --validator-keypair  Path to the validator keypair file (default: \$HOME/solange/keys/validator-keypair.json)."
+    echo "  --vote-keypair       Path to the vote account keypair file (default: \$HOME/solange/keys/vote-account-keypair.json)."
     exit 1
 }
 
 # Default values
+PORT="22"
 REMOTE_HOST=""
-VALIDATOR_KEYPAIR="$HOME/solange/keys/validator-keypair.json"
-VOTE_KEYPAIR="$HOME/solange/keys/vote-account-keypair.json"
-OUTPUT_DIR="$HOME/solange/keys"
+VALIDATOR_KEYPAIR="./../keys/validator-keypair.json"
+VOTE_KEYPAIR="./../keys/vote-account-keypair.json"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --remote-host)
-            REMOTE_HOST="$2"
-            shift 2
-            ;;
-        --validator-keypair)
-            VALIDATOR_KEYPAIR="$2"
-            shift 2
-            ;;
-        --vote-keypair)
-            VOTE_KEYPAIR="$2"
-            shift 2
-            ;;
-        --output-dir)
-            OUTPUT_DIR="$2"
-            shift 2
-            ;;
-        -h|--help)
-            usage
-            ;;
-        *)
-            echo "Unknown option: $1"
-            usage
-            ;;
+    --port)
+        PORT="$2"
+        shift 2
+        ;;
+    --remote-host)
+        REMOTE_HOST="$2"
+        shift 2
+        ;;
+    --validator-keypair)
+        VALIDATOR_KEYPAIR="$2"
+        shift 2
+        ;;
+    --vote-keypair)
+        VOTE_KEYPAIR="$2"
+        shift 2
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        echo "Unknown option: $1"
+        usage
+        ;;
     esac
 done
 
@@ -65,21 +65,10 @@ if [[ ! -f "$VOTE_KEYPAIR" ]]; then
     exit 1
 fi
 
-# Generate public keys
-echo "Generating public keys..."
-VALIDATOR_PUBKEY=$(solana-keygen pubkey "$VALIDATOR_KEYPAIR")
-VOTE_PUBKEY=$(solana-keygen pubkey "$VOTE_KEYPAIR")
-
-# Ensure output directory exists
-mkdir -p "$OUTPUT_DIR"
-
-# Write public keys to files
-echo "$VALIDATOR_PUBKEY" >"$OUTPUT_DIR/validator.pub"
-echo "$VOTE_PUBKEY" >"$OUTPUT_DIR/vote.pub"
-echo "Public keys written to $OUTPUT_DIR."
-
 # Transfer files to remote host
 echo "Transferring files to $REMOTE_HOST..."
-scp "$OUTPUT_DIR/validator.pub" "sol@$REMOTE_HOST:/home/sol/solange/validator.json"
-scp "$OUTPUT_DIR/vote.pub" "sol@$REMOTE_HOST:/home/sol/solange/vote.json"
+DESTINATION_FOLDER="/home/sol/solange/keys"
+ssh sol@$REMOTE_HOST -p $PORT "mkdir -p $DESTINATION_FOLDER"
+scp -P $PORT "$VALIDATOR_KEYPAIR" "sol@$REMOTE_HOST:$DESTINATION_FOLDER/validator-keypair.json"
+scp -P $PORT "$VOTE_KEYPAIR" "sol@$REMOTE_HOST:$DESTINATION_FOLDER/vote-account-keypair.json"
 echo "Files successfully transferred to $REMOTE_HOST."

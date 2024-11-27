@@ -59,21 +59,24 @@ set_network() {
 }
 
 create_keys() {
+    # make sure output folder exists
+    mkdir -p ./keys
+
     # Create keys
     echo "Creating validator key..."
-    solana-keygen new -o identity-keypair.json
+    solana-keygen new -o ./keys/identity-keypair.json
     echo "Key created successfully."
     echo "Creating vote account key..."
-    solana-keygen new -o vote-account-keypair.json
+    solana-keygen new -o ./keys/vote-account-keypair.json
     echo "Key created successfully."
     echo "Creating authorized withdrawer key..."
-    solana-keygen new -o authorized-withdrawer-keypair.json
+    solana-keygen new -o ./keys/authorized-withdrawer-keypair.json
     echo "Key created successfully."
 }
 
 #!/bin/bash
 
-aidrop_sol() {
+airdrop_sol() {
     local amount=$1
     local keypair=$2
     local max_retries=${3:-10} # Maximum retries (default: 10)
@@ -83,7 +86,7 @@ aidrop_sol() {
     echo "Attempting to airdrop $amount SOL to $keypair..."
 
     while ((attempt <= max_retries)); do
-        if solana airdrop "$amount" "$keypair"; then
+        if solana airdrop "$amount" "$keypair" -k $keypair; then
             echo "Airdrop successful on attempt $attempt."
             return 0
         else
@@ -100,17 +103,20 @@ aidrop_sol() {
 create_vote_account() {
     # airdrop some sol if on testnet or devnet
     echo "Airdropping SOL..."
-    if [[ $(solana config get | grep -o "testnet") == "testnet" || $(solana config get | grep -o "devnet") == "devnet" ]]; then
-        airdrop_sol 1 ./identity-keypair.json
+    if [[ $(solana config get json_rpc_url | grep -o "testnet") == "testnet" || $(solana config get json_rpc_url | grep -o "devnet") == "devnet" ]]; then
+        echo "testnet or devnet detected, airdropping 1 SOL..."
+        airdrop_sol 1 ./keys/identity-keypair.json
+        echo "Airdrop complete. Current balance is"
+        solana balance ./keys/identity-keypair.json
     fi
 
     # Create vote account
     echo "Creating vote account..."
     solana create-vote-account \
-        --fee-payer ./identity-keypair.json \
-        ./vote-account-keypair.json \
-        ./identity-keypair.json \
-        ./authorized-withdrawer-keypair.json
+        --fee-payer ./keys/identity-keypair.json \
+        ./keys/vote-account-keypair.json \
+        ./keys/identity-keypair.json \
+        ./keys/authorized-withdrawer-keypair.json
 
     echo "Vote account created successfully."
 }
