@@ -10,20 +10,22 @@
 Solange is a set of scripts to build and execute a solana validator node. It is designed to be a plug-and-play solution for developers who want to run a validator node on the solana network.
 
 ## Setup the node
-#### 1. [On validator machine] Install solana on validator node
+#### 1. [On validator machine] Setup solana on validator node
 ```bash
-bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/build.sh') --sol-version '2.0.16' --ledger-drive nvme0n1 --ledger-dir /mnt/ledger --accounts-drive nvme1n1 --accounts-dir /mnt/accounts"
+git clone https://github.com/epignatelli/solange $HOME/
+chmod +x $HOME/solange/install/setup.sh
+$HOME/solange/install/setup.sh --sol-version '2.0.17' --ledger-drive /dev/nvme0n1 --ledger-dir /mnt/ledger --accounts-drive /dev/nvme1n1 --accounts-dir /mnt/accounts
 ```
 
 #### 2. [On personal machine] Create accounts
 ```bash
-bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/create_accounts.sh') --network 'testnet'"
+git clone https://github.com/epignatelli/solange $HOME/
+chmod +x $HOME/solange/install/create_accounts.sh
+chmod +x $HOME/solange/install/transfer_keys.sh
+$HOME/solange/install/create_accounts.sh --network 'testnet'
+$HOME/solange/install/transfer_keys.sh --remote-host latte
 ```
 
-#### 3. [On personal machine] Copy the pub keys to the validator machine
-```bash
-bash -c "$(curl 'https://raw.githubusercontent.com/epignatelli/solange/refs/heads/main/install/transfer_keys.sh') --remote-host latte"
-```
 
 ## Execute the node
 The installation script creates a systemd service that runs the validator. You can start the service with the following command:

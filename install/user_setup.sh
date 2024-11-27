@@ -3,13 +3,13 @@
 # Installs required packages, configures Git, and sets up Oh-My-Zsh with plugins and a custom theme.
 
 # Exit on errors
-set -euo pipefail
+set -eo pipefail
 
 # Function to update and upgrade the system
 update_system() {
     echo "Updating and upgrading system packages..."
     sudo apt update -y
-    sudo apt upgrade -y
+    # sudo apt upgrade -y
     echo "System packages updated."
 }
 

@@ -6,9 +6,6 @@
 # Exit on error
 set -eo pipefail
 
-echo "First argument: $0"
-echo "Second argument: $1"
-
 # Function to append a directory to PATH
 append_to_path() {
     local new_dir="$1"                      # Directory to add to PATH
@@ -23,30 +20,6 @@ append_to_path() {
 
     export PATH="$PATH:$new_dir"
     echo "Added $new_dir to PATH in the current shell session"
-}
-
-create_sol_user() {
-    # Create a new user sol sudo if it doesn't exist
-    if ! id sol &>/dev/null; then
-        echo "Creating a new user for Solana..."
-        sudo adduser sol
-        sudo usermod -aG sudo sol
-        sudo passwd sol
-        echo "User 'sol' created successfully."
-    else
-        echo "User 'sol' already exists."
-    fi
-
-    # If the script is not running as sol user,
-    # make a copy of the script in /home/sol and run it as sol user
-    if [ "$USER" != "sol" ]; then
-        echo "Switching to user 'sol'..."
-        sudo cp "$0" "/home/sol/$(basename "$0")"
-        sudo chown sol:sol "/home/sol/$(basename "$0")"
-        sudo -u sol bash "/home/sol/$(basename "$0")" "$@"
-        exit
-    fi
-
 }
 
 install_prerequisites() {
@@ -98,19 +71,14 @@ mount_drives() {
     echo "Formatting and mounting drives..."
     sudo mkfs -t ext4 "$ledger_drive"
     sudo mkdir -p $ledger_dir
-
     sudo mount "$ledger_drive" $ledger_dir
-    sudo chown -R sol:sol $ledger_dir
 
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
         sudo mkfs -t ext4 "$accounts_drive"
         sudo mkdir -p $accounts_dir
         sudo mount "$accounts_drive" $accounts_dir
-        sudo chown -R sol:sol $accounts_dir
     else
-        sudo mkdir -p $ledger_dir/ledger
         sudo mkdir -p $ledger_dir/accounts
-        sudo chown -R sol:sol $ledger_dir
     fi
     echo "Drives mounted successfully."
 }
@@ -146,20 +114,18 @@ EOF"
 
 setup_log() {
     # Ensure the log directory exists with correct permissions
-    local log_dir="/home/sol/solange/logs"
+    local log_dir="$HOME/solange/logs"
     local log_file="$log_dir/agave-validator.log"
 
     sudo mkdir -p "$log_dir"
-    sudo chown -R sol:sol "$log_dir"
     sudo chmod 755 "$log_dir"
 
     # Ensure the log file exists and is writable
     sudo touch "$log_file"
-    sudo chown sol:sol "$log_file"
     sudo chmod 644 "$log_file"
 
     # Setup log rotation for the log file
-    local logrotate_config="/etc/logrotate.d/sol"
+    local logrotate_config="/etc/logrotate.d/$(whoami)"
 
     sudo bash -c "cat >$logrotate_config <<EOF
 $log_file {
@@ -194,10 +160,10 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=sol
+User=$(whoami)
 LimitNOFILE=1000000
-ExecStartPre=/home/sol/solange/bin/catchup.sh
-ExecStart=/home/solange/bin/execute.sh
+ExecStartPre=$HOME/solange/bin/catchup.sh
+ExecStart=$HOME/solange/bin/execute.sh
 TimeoutStartSec=600
 
 [Install]
@@ -258,12 +224,9 @@ main() {
 
     # Check required arguments
     if [[ -z "$LEDGER_DRIVE" || -z "$ACCOUNTS_DRIVE" ]]; then
-        echo "Error: Both --mount-ledger and --mount-accounts are required."
+        echo "Error: Both --ledger-drive and --accounts-drive are required."
         exit 1
     fi
-
-    # Create user
-    create_sol_user
 
     # Install prerequisites
     install_prerequisites
