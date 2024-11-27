@@ -25,8 +25,7 @@ append_to_path() {
 install_prerequisites() {
     # Install prerequisites
     echo "Installing Solana..."
-    sol_version=$(cat SOL_VERSION.txt || echo "stable")
-    sh -c "$(curl -sSfL https://release.anza.xyz/$sol_version/install)"
+    sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
     # Append to PATH
     append_to_path "$HOME/.local/share/solana/install/active_release/bin"
     echo "Solana installed successfully."
