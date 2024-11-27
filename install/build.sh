@@ -6,6 +6,9 @@
 # Exit on error
 set -eo pipefail
 
+echo "First argument: $0"
+echo "Second argument: $1"
+
 # Function to append a directory to PATH
 append_to_path() {
     local new_dir="$1"                      # Directory to add to PATH
@@ -34,13 +37,16 @@ create_sol_user() {
         echo "User 'sol' already exists."
     fi
 
-    # Re-run the script as the sol user if not already running as sol
-    # if [[ "$(whoami)" != "sol" ]]; then
-    #     echo "Switching to user 'sol'..."
-    #     sudo  "$0"
-    #     sudo -u sol bash "$0" "$@"
-    #     exit
-    # fi
+    # If the script is not running as sol user,
+    # make a copy of the script in /home/sol and run it as sol user
+    if [ "$USER" != "sol" ]; then
+        echo "Switching to user 'sol'..."
+        sudo cp "$0" "/home/sol/$(basename "$0")"
+        sudo chown sol:sol "/home/sol/$(basename "$0")"
+        sudo -u sol bash "/home/sol/$(basename "$0")" "$@"
+        exit
+    fi
+
 }
 
 install_prerequisites() {
@@ -257,25 +263,25 @@ main() {
     fi
 
     # Create user
-    su - sol -c create_sol_user
+    create_sol_user
 
     # Install prerequisites
-    su - sol -c install_prerequisites
+    install_prerequisites
 
     # Install Solana
-    su - sol -c install_solana "$INSTALL_DIR" "$SOL_VERSION"
+    install_solana "$INSTALL_DIR" "$SOL_VERSION"
 
     # Mount drives
-    su - sol -c mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE" "$LEDGER_DIR" "$ACCOUNTS_DIR"
+    mount_drives "$LEDGER_DRIVE" "$ACCOUNTS_DRIVE" "$LEDGER_DIR" "$ACCOUNTS_DIR"
 
     # Tune system
-    su - sol -c tune_system
+    tune_system
 
     # Setup log rotation
-    su - sol -c setup_log
+    setup_log
 
     # Setup service
-    su - sol -c setup_service
+    setup_service
 
     echo "Setup complete!"
 }
