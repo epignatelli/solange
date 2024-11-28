@@ -23,8 +23,8 @@ $HOME/solange/install/setup.sh --sol-version '2.0.17' --ledger-drive /dev/nvme0n
 git clone https://github.com/epignatelli/solange $HOME/solange
 chmod +x $HOME/solange/install/create_accounts.sh
 chmod +x $HOME/solange/install/transfer_keys.sh
-$HOME/solange/install/create_accounts.sh --network 'testnet'
-$HOME/solange/install/transfer_keys.sh --remote-host latte
+$HOME/solange/install/create_accounts.sh --network 'devnet'
+$HOME/solange/install/transfer_keys.sh --remote-host solana-latte.ignorelist.com
 ```
 
 
@@ -69,3 +69,4 @@ TODO
   - https://laine-sa.medium.com/solana-staking-rewards-validator-economics-how-does-it-work-6718e4cccc4e
   - https://apfikunmi.medium.com/running-a-solana-validator-a95cdfd6488a#5533
   - https://medium.com/@aadesolaade2341/decoding-solana-unraveling-the-role-of-validators-and-fee-economics-bd3eb40a08c3
+- Vote modding: https://www.anza.xyz/blog/feature-gate-spotlight-timely-vote-credits

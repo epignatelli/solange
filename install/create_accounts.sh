@@ -63,7 +63,7 @@ create_keys() {
 
     # Create keys
     echo "Creating validator key..."
-    solana-keygen new -o ./keys/identity-keypair.json
+    solana-keygen new -o ./keys/validator-keypair.json
     echo "Key created successfully."
     echo "Creating vote account key..."
     solana-keygen new -o ./keys/vote-account-keypair.json
@@ -83,6 +83,8 @@ airdrop_sol() {
     local attempt=1
 
     echo "Attempting to airdrop $amount SOL to $keypair..."
+    # pub_key=$(solana-keygen pubkey "$keypair")
+    # read -n 1 -p "Airdrop $amount SOL from https://faucet.solana.com/ to $pub_key. Press any key to continue..." 
 
     while ((attempt <= max_retries)); do
         if solana airdrop "$amount" "$keypair" -k $keypair; then
@@ -104,17 +106,17 @@ create_vote_account() {
     echo "Airdropping SOL..."
     if [[ $(solana config get json_rpc_url | grep -o "testnet") == "testnet" || $(solana config get json_rpc_url | grep -o "devnet") == "devnet" ]]; then
         echo "testnet or devnet detected, airdropping 1 SOL..."
-        airdrop_sol 1 ./keys/identity-keypair.json
+        airdrop_sol 1 ./keys/validator-keypair.json
         echo "Airdrop complete. Current balance is"
-        solana balance ./keys/identity-keypair.json
+        solana balance ./keys/validator-keypair.json
     fi
 
     # Create vote account
     echo "Creating vote account..."
     solana create-vote-account \
-        --fee-payer ./keys/identity-keypair.json \
+        --fee-payer ./keys/validator-keypair.json \
         ./keys/vote-account-keypair.json \
-        ./keys/identity-keypair.json \
+        ./keys/validator-keypair.json \
         ./keys/authorized-withdrawer-keypair.json
 
     echo "Vote account created successfully."

@@ -14,10 +14,11 @@ usage() {
 }
 
 # Default values
+SCRIPT_DIR=$(dirname $(readlink -f $0))
 PORT="22"
 REMOTE_HOST=""
-VALIDATOR_KEYPAIR="./../keys/validator-keypair.json"
-VOTE_KEYPAIR="./../keys/vote-account-keypair.json"
+VALIDATOR_KEYPAIR="$SCRIPT_DIR/../keys/validator-keypair.json"
+VOTE_KEYPAIR="$SCRIPT_DIR/../keys/vote-account-keypair.json"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -69,6 +70,5 @@ fi
 echo "Transferring files to $REMOTE_HOST..."
 DESTINATION_FOLDER="/home/sol/solange/keys"
 ssh sol@$REMOTE_HOST -p $PORT "mkdir -p $DESTINATION_FOLDER"
-scp -P $PORT "$VALIDATOR_KEYPAIR" "sol@$REMOTE_HOST:$DESTINATION_FOLDER/validator-keypair.json"
-scp -P $PORT "$VOTE_KEYPAIR" "sol@$REMOTE_HOST:$DESTINATION_FOLDER/vote-account-keypair.json"
+scp -P $PORT "$VALIDATOR_KEYPAIR" "$VOTE_KEYPAIR" "sol@$REMOTE_HOST:$DESTINATION_FOLDER/"
 echo "Files successfully transferred to $REMOTE_HOST."

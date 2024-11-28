@@ -71,14 +71,14 @@ mount_drives() {
     echo "Formatting and mounting drives..."
     sudo mkfs -t ext4 "$ledger_drive"
     sudo mkdir -p $ledger_dir
+    sudo chown -R sol:sol $ledger_dir
     sudo mount "$ledger_drive" $ledger_dir
+    sudo mkdir -p $accounts_dir
+    sudo chown -R sol:sol $accounts_dir
 
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
         sudo mkfs -t ext4 "$accounts_drive"
-        sudo mkdir -p $accounts_dir
         sudo mount "$accounts_drive" $accounts_dir
-    else
-        sudo mkdir -p $ledger_dir/accounts
     fi
     echo "Drives mounted successfully."
 }
@@ -162,7 +162,6 @@ Restart=always
 RestartSec=1
 User=$(whoami)
 LimitNOFILE=1000000
-ExecStartPre=$HOME/solange/bin/catchup.sh
 ExecStart=$HOME/solange/bin/execute.sh
 TimeoutStartSec=600
 

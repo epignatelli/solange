@@ -1,13 +1,11 @@
 #!/bin/bash
 
 # make sure the clock is in sync
-timedatetctl | grep "synchronized: yes" || {
+timedatectl | grep "synchronized: yes" || {
     sudo systemctl stop systemd-timesyncd
     sudo ntpdate -s time.nist.gov
     sudo systemctl start systemd-timesyncd
 }
-
-# TODO: generalise to any network (mainnet, testnet, devnet)
 
 # start the validator
 exec agave-validator \
@@ -18,10 +16,9 @@ exec agave-validator \
     --known-validator Ft5fbkqNa76vnsjYNwjDZUXoTWpP7VYm3mtsaQckQADN \
     --known-validator 9QxCLckBiJc783jnMvXZubK4wH86Eqqvashtrwvcsgkv \
     --only-known-rpc \
-    --no-snapshot-fetch \
     --log /home/sol/solange/logs/agave-validator.log \
-    --ledger $1 \
-    --accounts $2 \
+    --ledger /mnt/ledger \
+    --accounts /mnt/accounts \
     --rpc-port 8899 \
     --dynamic-port-range 8000-8020 \
     --entrypoint entrypoint.testnet.solana.com:8001 \
