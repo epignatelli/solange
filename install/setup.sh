@@ -69,17 +69,24 @@ mount_drives() {
     local accounts_dir="${4:-/mnt/accounts}"
 
     echo "Formatting and mounting drives..."
-    sudo mkfs -t ext4 "$ledger_drive"
+    # make directories for ledger and accounts
     sudo mkdir -p $ledger_dir
-    sudo chown -R sol:sol $ledger_dir
-    sudo mount "$ledger_drive" $ledger_dir
     sudo mkdir -p $accounts_dir
-    sudo chown -R sol:sol $accounts_dir
 
+    # mount ledger drive
+    sudo mkfs -t ext4 "$ledger_drive"
+    sudo mount "$ledger_drive" $ledger_dir
+
+    # if accounts drive is different, mount it
     if [[ "$ledger_drive" != "$accounts_drive" ]]; then
         sudo mkfs -t ext4 "$accounts_drive"
         sudo mount "$accounts_drive" $accounts_dir
     fi
+
+    # set permissions
+    sudo chown -R sol:sol $ledger_dir
+    sudo chown -R sol:sol $accounts_dir
+
     echo "Drives mounted successfully."
 }
 
@@ -244,6 +251,8 @@ main() {
 
     # Setup service
     setup_service
+
+    sudo chown -R sol:sol "$INSTALL_DIR"
 
     echo "Setup complete!"
 }
