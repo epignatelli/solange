@@ -179,6 +179,10 @@ EOF"
     echo "Solana service setup complete."
 }
 
+open_ports() {
+    sudo ufw allow 8000:8999
+}
+
 # Parse named parameters
 parse_args() {
     local args=("$@")
@@ -251,6 +255,9 @@ main() {
 
     # Setup service
     setup_service
+
+    # Open ports
+    open_ports
 
     sudo chown -R sol:sol "$INSTALL_DIR"
 
