@@ -263,6 +263,7 @@ main() {
     open_ports
 
     sudo chown -R sol:sol "$INSTALL_DIR"
+    sudo chmod -R +x "$INSTALL_DIR"
 
     echo "Setup complete!"
 }
