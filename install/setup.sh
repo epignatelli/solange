@@ -175,7 +175,7 @@ EOF"
 }
 
 open_ports() {
-    sudo ufw allow 8000:8999
+    sudo ufw allow 8000:8999/tcp
 }
 
 install_nodejs() {
