@@ -119,6 +119,7 @@ EOF"
     echo "System tuning complete."
 }
 
+# Setup log rotation
 setup_log() {
     # Ensure the log directory exists with correct permissions
     local log_dir="$HOME/solange/logs"
@@ -131,27 +132,19 @@ setup_log() {
     sudo touch "$log_file"
     sudo chmod 644 "$log_file"
 
-    # Setup log rotation for the log file
-    local logrotate_config="/etc/logrotate.d/$(whoami)"
-
-    sudo bash -c "cat >$logrotate_config <<EOF
+    # Setup log rotation
+    cat > logrotate.sol <<EOF
 $log_file {
   rotate 7
   daily
   missingok
-  notifempty
-  compress
-  delaycompress
-  copytruncate
   postrotate
-    systemctl kill -s USR1 sol.service > /dev/null 2>/dev/null || true
+    systemctl kill -s USR1 sol.service
   endscript
 }
-EOF"
-
-    # Restart the logrotate service to apply changes
-    sudo systemctl restart logrotate.service
-
+EOF
+    sudo cp logrotate.sol /etc/logrotate.d/sol
+    systemctl restart logrotate.service
     echo "Log rotation setup complete for $log_file."
 }
 
