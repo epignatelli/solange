@@ -167,8 +167,10 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-User=$(whoami)
+User=sol
 LimitNOFILE=1000000
+LogRateLimitIntervalSec=0
+Environment="PATH=/bin:/usr/bin:/home/sol/.local/share/solana/install/active_release/bin"
 ExecStart=$HOME/solange/bin/execute.sh
 TimeoutStartSec=600
 
@@ -181,6 +183,14 @@ EOF"
 
 open_ports() {
     sudo ufw allow 8000:8999
+}
+
+install_nodejs() {
+    sudo apt-get install -y nodejs
+    sudo apt-get install -y npm
+    sudo npm install -y pm2
+    npm init -y
+    npm install @solana-web3.js express
 }
 
 # Parse named parameters
