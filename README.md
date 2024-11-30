@@ -51,8 +51,17 @@ The command solana gossip lists all validators that have registered with the pro
 solana gossip | grep <validator-pubkey>
 ```
 
-## Examples
-TODO
+## Roadmap
+1. Setup paper wallet or ledger.
+1. Add support for solblaze - https://stake-docs.solblaze.org/protocol/delegation-strategy
+2. Add support for marinade - https://github.com/marinade-finance/validator-bonds/tree/main/packages/validator-bonds-cli
+3. Add support for jito
+4. Add support for jpool
+5. Add support for socean
+6. Add support for daopool
+7. Add support for eversol
+8. Setup fail2ban
+
 
 ## References
 - Operating a validator: https://docs.anza.xyz/operations
@@ -70,3 +79,29 @@ TODO
   - https://apfikunmi.medium.com/running-a-solana-validator-a95cdfd6488a#5533
   - https://medium.com/@aadesolaade2341/decoding-solana-unraveling-the-role-of-validators-and-fee-economics-bd3eb40a08c3
 - Vote modding: https://www.anza.xyz/blog/feature-gate-spotlight-timely-vote-credits
+- Lending solana: https://solend.fi/
+
+## Stake delegators
+- [Solblaze](https://stake-docs.solblaze.org/protocol/delegation-strategy)
+- [Marinade](https://docs.marinade.finance/marinade-protocol/validators-1/)
+- [Jito](https://www.jito.network/)
+- [Jpool](https://jpool.io/)
+- [Socean](https://socean.io/)
+- [DaoPool](https://daopool.io/)
+- [EverSol] https://eversol.eu/en/
+
+
+## How to pick top validators
+- https://www.reddit.com/r/solana/comments/119viy4/which_is_best_solana_staking_validator/
+- https://topvalidators.app/
+- https://solanabeach.io/validators
+- https://app.marinade.finance/network/validators/?validatorsFilter=All+Validators&direction=descending&sorting=stake
+
+
+## Monitoring app
+Things to monitor:
+- If the validator is running / alert if delinquent
+- Account balance / alert if below a threshold
+- If the validator is caught up with the network / alert if not
+- Have a tab with the logs
+- Have a tab with the gossip
